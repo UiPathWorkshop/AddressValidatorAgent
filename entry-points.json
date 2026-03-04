@@ -1,0 +1,263 @@
+{
+    "$schema": "https://cloud.uipath.com/draft/2024-12/entry-point",
+    "$id": "entry-points.json",
+    "entryPoints": [
+        {
+            "filePath": "agent",
+            "uniqueId": "a7a68a27-02e1-4c75-b191-446130282b5a",
+            "type": "agent",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "address": {
+                        "description": "The full raw address string to parse and verify. Example: '123 N Main St Apt 4, Springfield, IL 62701'. Should be a single-line or multi-line US-style address. Do not guess if empty or missing \u2014 return an error.",
+                        "title": "Address",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "address"
+                ]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "streetNumber": {
+                        "description": "The house or building number. Example: '123'. Empty string if not found.",
+                        "title": "Streetnumber",
+                        "type": "string"
+                    },
+                    "preDirectional": {
+                        "description": "The directional prefix before the street name. Values: N, S, E, W, NE, NW, SE, SW. Empty string if not present.",
+                        "title": "Predirectional",
+                        "type": "string"
+                    },
+                    "streetName": {
+                        "description": "The primary street name without number, direction, or type. Example: 'Main'. Empty string if not found.",
+                        "title": "Streetname",
+                        "type": "string"
+                    },
+                    "streetType": {
+                        "description": "The street suffix/type. Examples: St, Ave, Blvd, Dr, Ln, Rd, Ct, Pl, Way, Cir. Abbreviated form preferred. Empty string if not found.",
+                        "title": "Streettype",
+                        "type": "string"
+                    },
+                    "postDirectional": {
+                        "description": "The directional suffix after the street name/type. Values: N, S, E, W, NE, NW, SE, SW. Empty string if not present.",
+                        "title": "Postdirectional",
+                        "type": "string"
+                    },
+                    "unitType": {
+                        "description": "The secondary address unit designator. Examples: Apt, Suite, Unit, Bldg, Floor, Rm. Empty string if not present.",
+                        "title": "Unittype",
+                        "type": "string"
+                    },
+                    "unitNumber": {
+                        "description": "The secondary address unit number or letter. Example: '4', 'B'. Empty string if not present.",
+                        "title": "Unitnumber",
+                        "type": "string"
+                    },
+                    "city": {
+                        "description": "The city or municipality name. Example: 'Springfield'. Empty string if not found.",
+                        "title": "City",
+                        "type": "string"
+                    },
+                    "state": {
+                        "description": "The US state or territory as a 2-letter abbreviation (e.g., 'IL', 'CA'). Empty string if not found.",
+                        "title": "State",
+                        "type": "string"
+                    },
+                    "zipCode": {
+                        "description": "The 5-digit ZIP code. Example: '62701'. Empty string if not found.",
+                        "title": "Zipcode",
+                        "type": "string"
+                    },
+                    "zipPlus4": {
+                        "description": "The 4-digit ZIP+4 extension, without the dash. Example: '1234'. Empty string if not present.",
+                        "title": "Zipplus4",
+                        "type": "string"
+                    },
+                    "country": {
+                        "description": "The country code. Defaults to 'US' if not specified in the input.",
+                        "title": "Country",
+                        "type": "string"
+                    },
+                    "formattedAddress": {
+                        "description": "The full address reassembled in standard USPS format. Example: '123 N Main St Apt 4, Springfield, IL 62701'.",
+                        "title": "Formattedaddress",
+                        "type": "string"
+                    },
+                    "confidence": {
+                        "description": "Confidence level of the parse. 'high' = all key parts found clearly. 'medium' = some parts inferred or ambiguous. 'low' = significant parts missing or unclear.",
+                        "title": "Confidence",
+                        "type": "string"
+                    },
+                    "notes": {
+                        "description": "Any warnings, ambiguities, or issues encountered during parsing. Empty string if none.",
+                        "title": "Notes",
+                        "type": "string"
+                    },
+                    "usps_validated": {
+                        "default": false,
+                        "description": "Whether the address was successfully validated against the USPS API.",
+                        "title": "Usps Validated",
+                        "type": "boolean"
+                    },
+                    "usps_match_code": {
+                        "default": "",
+                        "description": "The USPS address match code from the Addresses v3 API. Empty string if not validated.",
+                        "title": "Usps Match Code",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "streetNumber",
+                    "preDirectional",
+                    "streetName",
+                    "streetType",
+                    "postDirectional",
+                    "unitType",
+                    "unitNumber",
+                    "city",
+                    "state",
+                    "zipCode",
+                    "zipPlus4",
+                    "country",
+                    "formattedAddress",
+                    "confidence",
+                    "notes"
+                ]
+            },
+            "graph": {
+                "nodes": [
+                    {
+                        "id": "__start__",
+                        "name": "__start__",
+                        "type": "__start__",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "agent",
+                        "name": "agent",
+                        "type": "node",
+                        "subgraph": {
+                            "nodes": [
+                                {
+                                    "id": "__start__",
+                                    "name": "__start__",
+                                    "type": "__start__",
+                                    "subgraph": null,
+                                    "metadata": {}
+                                },
+                                {
+                                    "id": "init",
+                                    "name": "init",
+                                    "type": "node",
+                                    "subgraph": null,
+                                    "metadata": {}
+                                },
+                                {
+                                    "id": "terminate",
+                                    "name": "terminate",
+                                    "type": "node",
+                                    "subgraph": null,
+                                    "metadata": {}
+                                },
+                                {
+                                    "id": "agent",
+                                    "name": "agent",
+                                    "type": "model",
+                                    "subgraph": null,
+                                    "metadata": {
+                                        "model_name": "gpt-4o-2024-11-20",
+                                        "temperature": 0.0,
+                                        "max_tokens": 16384
+                                    }
+                                },
+                                {
+                                    "id": "__end__",
+                                    "name": "__end__",
+                                    "type": "__end__",
+                                    "subgraph": null,
+                                    "metadata": {}
+                                }
+                            ],
+                            "edges": [
+                                {
+                                    "source": "__start__",
+                                    "target": "init",
+                                    "label": null
+                                },
+                                {
+                                    "source": "agent",
+                                    "target": "agent",
+                                    "label": null
+                                },
+                                {
+                                    "source": "agent",
+                                    "target": "terminate",
+                                    "label": null
+                                },
+                                {
+                                    "source": "init",
+                                    "target": "agent",
+                                    "label": null
+                                },
+                                {
+                                    "source": "terminate",
+                                    "target": "__end__",
+                                    "label": null
+                                }
+                            ]
+                        },
+                        "metadata": {}
+                    },
+                    {
+                        "id": "validate_address",
+                        "name": "validate_address",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "output",
+                        "name": "output",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "__end__",
+                        "name": "__end__",
+                        "type": "__end__",
+                        "subgraph": null,
+                        "metadata": {}
+                    }
+                ],
+                "edges": [
+                    {
+                        "source": "__start__",
+                        "target": "agent",
+                        "label": null
+                    },
+                    {
+                        "source": "agent",
+                        "target": "validate_address",
+                        "label": null
+                    },
+                    {
+                        "source": "validate_address",
+                        "target": "output",
+                        "label": null
+                    },
+                    {
+                        "source": "output",
+                        "target": "__end__",
+                        "label": null
+                    }
+                ]
+            }
+        }
+    ]
+}

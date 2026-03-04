@@ -1,0 +1,12 @@
+[project]
+name = "coded-agent"
+version = "0.0.1"
+description = "Converted agent project"
+requires-python = ">=3.11"
+authors = [
+    { name = "kevin.bernstein@uipath.com", email = "kevin.bernstein@uipath.com" },
+]
+dependencies = [
+    "uipath==2.8.43",
+    "uipath-langchain==0.5.73",
+]

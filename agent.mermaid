@@ -1,0 +1,22 @@
+flowchart TB
+  __start__(__start__)
+  validate_address(validate_address)
+  output(output)
+  __end__(__end__)
+  __start__ --> agent
+  agent --> validate_address
+  validate_address --> output
+  output --> __end__
+  subgraph agent [agent]
+    direction LR
+    __start__(__start__)
+    init(init)
+    terminate(terminate)
+    agent(agent)
+    __end__(__end__)
+    __start__ --> init
+    agent --> agent
+    agent --> terminate
+    init --> agent
+    terminate --> __end__
+  end
