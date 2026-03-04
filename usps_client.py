@@ -3,6 +3,7 @@ import time
 from typing import Any, Optional
 import dotenv
 import httpx
+from uipath.tracing import traced
 
 dotenv.load_dotenv()
 
@@ -51,6 +52,7 @@ async def get_usps_token() -> str:
     return _cached_token
 
 
+@traced(name="validate_address", span_type="tool")
 async def validate_address(
     street: str,
     secondary: str = "",

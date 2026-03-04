@@ -4,7 +4,7 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "a7a68a27-02e1-4c75-b191-446130282b5a",
+            "uniqueId": "1c80977b-2e90-4500-90b1-d67b5fc6ce5e",
             "type": "agent",
             "input": {
                 "type": "object",
@@ -170,8 +170,7 @@
                                     "type": "model",
                                     "subgraph": null,
                                     "metadata": {
-                                        "model_name": "gpt-4o-2024-11-20",
-                                        "temperature": 0.0,
+                                        "model_name": "gpt-5.2-2025-12-11",
                                         "max_tokens": 16384
                                     }
                                 },

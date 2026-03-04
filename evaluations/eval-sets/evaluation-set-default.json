@@ -1,11 +1,181 @@
 {
-  "id": "7065378c-6c22-4f55-a294-60bd930ef5be",
-  "name": "Default Evaluation Set",
   "version": "1.0",
+  "id": "AddressValidatorDefaultEvalSet",
+  "name": "Default Evaluation Set",
   "evaluatorRefs": [
-    "15ac68e8-3629-4103-9676-dc4fef1c4664"
+    "LLMJudgeSemanticSimilarity",
+    "LLMJudgeTrajectory"
   ],
-  "evaluatorConfigs": [],
-  "evaluations": [],
-  "modelSettings": []
+  "modelSettings": [
+    {
+      "id": "default",
+      "modelName": "gpt-5.2-2025-12-11"
+    }
+  ],
+  "evaluations": [
+    {
+      "id": "valid-standard-address",
+      "name": "Valid standard address with unit",
+      "inputs": {
+        "address": "1600 Pennsylvania Avenue NW, Washington, DC 20500"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "1600",
+            "preDirectional": "",
+            "streetName": "PENNSYLVANIA",
+            "streetType": "AVE",
+            "postDirectional": "NW",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "WASHINGTON",
+            "state": "DC",
+            "zipCode": "20500",
+            "zipPlus4": "0005",
+            "country": "US",
+            "formattedAddress": "1600 PENNSYLVANIA AVE NW, WASHINGTON, DC 20500-0005",
+            "confidence": "high",
+            "usps_validated": true,
+            "usps_match_code": "Y"
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should call the USPS API to validate the address. The address is valid and should return usps_validated true with a high-confidence result."
+        }
+      }
+    },
+    {
+      "id": "valid-address-with-apartment",
+      "name": "Valid address with apartment unit",
+      "inputs": {
+        "address": "350 Fifth Avenue Suite 3300, New York, NY 10118"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "350",
+            "preDirectional": "",
+            "streetName": "5TH",
+            "streetType": "AVE",
+            "postDirectional": "",
+            "unitType": "STE",
+            "unitNumber": "3300",
+            "city": "NEW YORK",
+            "state": "NY",
+            "zipCode": "10118",
+            "zipPlus4": "0110",
+            "country": "US",
+            "formattedAddress": "350 5TH AVE STE 3300, NEW YORK, NY 10118-0110",
+            "confidence": "medium",
+            "usps_validated": false,
+            "usps_match_code": "S"
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should call the USPS API to validate the address. The primary address is valid but the suite number is not confirmed by USPS, resulting in DPV code 'S' and usps_validated false."
+        }
+      }
+    },
+    {
+      "id": "misspelled-city-missing-zip",
+      "name": "Misspelled city and missing ZIP",
+      "inputs": {
+        "address": "742 Evergreen Terrace, Springfeld, IL"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "742",
+            "preDirectional": "",
+            "streetName": "Evergreen",
+            "streetType": "Ter",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "Springfeld",
+            "state": "IL",
+            "zipCode": "",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "742 Evergreen Ter, Springfeld, IL",
+            "confidence": "medium",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should parse the address components, keeping the misspelled city 'Springfeld' as-is and normalizing 'Terrace' to 'Ter'. It should call the validate_address tool with the parsed values (empty zip_code since none was provided). The USPS API will return null because the address cannot be found. This null response is expected and correct behavior for an invalid address."
+        }
+      }
+    },
+    {
+      "id": "completely-invalid-address",
+      "name": "Completely invalid/nonsense address",
+      "inputs": {
+        "address": "99999 Nonexistent Blvd, Faketown, AZ 55555"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "99999",
+            "preDirectional": "",
+            "streetName": "Nonexistent",
+            "streetType": "Blvd",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "Faketown",
+            "state": "AZ",
+            "zipCode": "55555",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "99999 Nonexistent Blvd, Faketown, AZ 55555",
+            "confidence": "high",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should parse the address components as provided (state AZ, ZIP 55555) and call the validate_address tool with those values. The USPS API will return null because the address is invalid. This null response is expected and correct behavior for a completely made-up address."
+        }
+      },
+      "updatedAt": "2026-03-04T22:30:12.454Z"
+    },
+    {
+      "id": "messy-formatting-abbreviations",
+      "name": "Messy formatting with abbreviations",
+      "inputs": {
+        "address": "  233 s wacker dr   floor 45 , chicago   IL   60606  "
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "233",
+            "preDirectional": "S",
+            "streetName": "WACKER",
+            "streetType": "DR",
+            "postDirectional": "",
+            "unitType": "FL",
+            "unitNumber": "45",
+            "city": "CHICAGO",
+            "state": "IL",
+            "zipCode": "60606",
+            "zipPlus4": "6376",
+            "country": "US",
+            "formattedAddress": "233 S WACKER DR FL 45, CHICAGO, IL 60606-6376",
+            "confidence": "high",
+            "usps_validated": true,
+            "usps_match_code": "Y"
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should call the USPS API to validate the address. The address is valid and USPS confirms both the primary address and the floor number, returning usps_validated true with a high-confidence result."
+        }
+      }
+    }
+  ],
+  "fileName": "evaluation-set-default.json",
+  "updatedAt": "2026-03-04T22:30:12.454Z",
+  "selectedEntrypoint": "agent"
 }

@@ -275,11 +275,13 @@ async def validate_address_node(state: WrapperState) -> dict:
             "notes": (state.notes + " USPS validation skipped: no street address to validate.").strip(),
         }
 
+    usps_state = state.state.strip().upper()[:2] if state.state else ""
+
     usps_result = await validate_address(
         street=street,
         secondary=secondary,
         city=state.city,
-        state=state.state,
+        state=usps_state,
         zip_code=state.zipCode,
         zip_plus4=state.zipPlus4,
     )

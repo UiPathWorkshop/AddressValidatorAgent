@@ -1,12 +1,15 @@
 {
-  "id": "15ac68e8-3629-4103-9676-dc4fef1c4664",
   "version": "1.0",
+  "id": "LLMJudgeSemanticSimilarity",
+  "description": "An evaluator that uses a LLM to score the similarity of the actual output to the expected output",
   "evaluatorTypeId": "uipath-llm-judge-output-semantic-similarity",
   "evaluatorConfig": {
-    "name": "Default Evaluator",
-    "description": "An evaluator that uses a LLM to score the similarity of the actual output to the expected output",
+    "name": "LLM Judge Semantic Similarity",
+    "targetOutputKey": "*",
+    "model": "gpt-5.2-2025-12-11",
     "prompt": "As an expert evaluator, analyze the semantic similarity of these JSON contents to determine a score from 0-100. Focus on comparing the meaning and contextual equivalence of corresponding fields, accounting for alternative valid expressions, synonyms, and reasonable variations in language while maintaining high standards for accuracy and completeness. Provide your score with a justification, explaining briefly and concisely why you gave that score.\n----\nExpectedOutput:\n{{ExpectedOutput}}\n----\nActualOutput:\n{{ActualOutput}}\n",
-    "model": "gpt-4o-2024-11-20",
-    "targetOutputKey": "*"
+    "defaultEvaluationCriteria": {
+      "expectedOutput": {}
+    }
   }
 }
