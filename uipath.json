@@ -1,3 +1,134 @@
 {
-
+    "functions": {
+        "agent": "main:graph"
+    },
+    "entryPoints": [
+        {
+            "filePath": "agent",
+            "uniqueId": "1c80977b-2e90-4500-90b1-d67b5fc6ce5e",
+            "type": "agent",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "address": {
+                        "description": "The full raw address string to parse and verify. Example: '123 N Main St Apt 4, Springfield, IL 62701'. Should be a single-line or multi-line US-style address. Do not guess if empty or missing — return an error.",
+                        "title": "Address",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "address"
+                ]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "streetNumber": {
+                        "description": "The house or building number. Example: '123'. Empty string if not found.",
+                        "title": "Streetnumber",
+                        "type": "string"
+                    },
+                    "preDirectional": {
+                        "description": "The directional prefix before the street name. Values: N, S, E, W, NE, NW, SE, SW. Empty string if not present.",
+                        "title": "Predirectional",
+                        "type": "string"
+                    },
+                    "streetName": {
+                        "description": "The primary street name without number, direction, or type. Example: 'Main'. Empty string if not found.",
+                        "title": "Streetname",
+                        "type": "string"
+                    },
+                    "streetType": {
+                        "description": "The street suffix/type. Examples: St, Ave, Blvd, Dr, Ln, Rd, Ct, Pl, Way, Cir. Abbreviated form preferred. Empty string if not found.",
+                        "title": "Streettype",
+                        "type": "string"
+                    },
+                    "postDirectional": {
+                        "description": "The directional suffix after the street name/type. Values: N, S, E, W, NE, NW, SE, SW. Empty string if not present.",
+                        "title": "Postdirectional",
+                        "type": "string"
+                    },
+                    "unitType": {
+                        "description": "The secondary address unit designator. Examples: Apt, Suite, Unit, Bldg, Floor, Rm. Empty string if not present.",
+                        "title": "Unittype",
+                        "type": "string"
+                    },
+                    "unitNumber": {
+                        "description": "The secondary address unit number or letter. Example: '4', 'B'. Empty string if not present.",
+                        "title": "Unitnumber",
+                        "type": "string"
+                    },
+                    "city": {
+                        "description": "The city or municipality name. Example: 'Springfield'. Empty string if not found.",
+                        "title": "City",
+                        "type": "string"
+                    },
+                    "state": {
+                        "description": "The US state or territory as a 2-letter abbreviation (e.g., 'IL', 'CA'). Empty string if not found.",
+                        "title": "State",
+                        "type": "string"
+                    },
+                    "zipCode": {
+                        "description": "The 5-digit ZIP code. Example: '62701'. Empty string if not found.",
+                        "title": "Zipcode",
+                        "type": "string"
+                    },
+                    "zipPlus4": {
+                        "description": "The 4-digit ZIP+4 extension, without the dash. Example: '1234'. Empty string if not present.",
+                        "title": "Zipplus4",
+                        "type": "string"
+                    },
+                    "country": {
+                        "description": "The country code. Defaults to 'US' if not specified in the input.",
+                        "title": "Country",
+                        "type": "string"
+                    },
+                    "formattedAddress": {
+                        "description": "The full address reassembled in standard USPS format. Example: '123 N Main St Apt 4, Springfield, IL 62701'.",
+                        "title": "Formattedaddress",
+                        "type": "string"
+                    },
+                    "confidence": {
+                        "description": "Confidence level of the parse. 'high' = all key parts found clearly. 'medium' = some parts inferred or ambiguous. 'low' = significant parts missing or unclear.",
+                        "title": "Confidence",
+                        "type": "string"
+                    },
+                    "notes": {
+                        "description": "Any warnings, ambiguities, or issues encountered during parsing. Empty string if none.",
+                        "title": "Notes",
+                        "type": "string"
+                    },
+                    "usps_validated": {
+                        "default": false,
+                        "description": "Whether the address was successfully validated against the USPS API.",
+                        "title": "Usps Validated",
+                        "type": "boolean"
+                    },
+                    "usps_match_code": {
+                        "default": "",
+                        "description": "The USPS address match code from the Addresses v3 API. Empty string if not validated.",
+                        "title": "Usps Match Code",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "streetNumber",
+                    "preDirectional",
+                    "streetName",
+                    "streetType",
+                    "postDirectional",
+                    "unitType",
+                    "unitNumber",
+                    "city",
+                    "state",
+                    "zipCode",
+                    "zipPlus4",
+                    "country",
+                    "formattedAddress",
+                    "confidence",
+                    "notes"
+                ]
+            }
+        }
+    ]
 }
