@@ -5,13 +5,23 @@ import dotenv
 import httpx
 from uipath.tracing import traced
 
-dotenv.load_dotenv()
+_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+dotenv.load_dotenv(dotenv_path=os.path.join(_PROJECT_ROOT, ".env"))
 
 USPS_OAUTH_URL = "https://apis.usps.com/oauth2/v3/token"
 USPS_ADDRESS_URL = "https://apis.usps.com/addresses/v3/address"
 
 _cached_token: Optional[str] = None
 _token_expires_at: float = 0.0
+
+
+def _first_env(*names: str) -> str:
+    """Return first non-empty environment variable from provided names."""
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
 
 
 
@@ -21,16 +31,18 @@ async def get_usps_token() -> str:
 
     if _cached_token and time.time() < _token_expires_at:
         print("Using cached token")
-        print(_cached_token)
         return _cached_token
 
-    client_id = os.environ.get("USPS_CONSUMER_KEY", "")
-
-    client_secret = os.environ.get("USPS_CONSUMER_SECRET", "")
+    client_id = _first_env("USPS_CONSUMER_KEY", "USPS_CLIENT_ID", "USPS_CONSUMER_ID")
+    client_secret = _first_env(
+        "USPS_CONSUMER_SECRET", "USPS_CLIENT_SECRET", "USPS_CONSUMER_PASSWORD"
+    )
 
     if not client_id or not client_secret:
-        print("Client ID or secret is not set")
-        raise ValueError("USPS_CONSUMER_KEY and USPS_CONSUMER_SECRET must be set")
+        print("USPS credentials are not fully configured")
+        raise ValueError(
+            "Missing USPS credentials. Set USPS_CONSUMER_KEY and USPS_CONSUMER_SECRET."
+        )
 
     async with httpx.AsyncClient() as client:
         print("Posting to USPS OAuth URL")

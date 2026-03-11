@@ -239,6 +239,94 @@ def _parse_secondary(secondary: str) -> dict:
     return {"unitType": "", "unitNumber": ""}
 
 
+def _infer_confidence_from_components(
+    street_number: str,
+    street_name: str,
+    city: str,
+    state: str,
+    zip_code: str,
+) -> str:
+    """Infer confidence from core parsed components when USPS has no match."""
+    has_street_number = bool(street_number.strip())
+    has_street_name = bool(street_name.strip())
+    has_city = bool(city.strip())
+    has_state = bool(state.strip())
+    has_zip = bool(zip_code.strip())
+
+    if has_street_number and has_street_name and has_city and has_state and has_zip:
+        return "high"
+    if has_street_name and has_city and (has_state or has_zip):
+        return "medium"
+    return "low"
+
+
+def _normalize_street_name_and_type(street_name: str, street_type: str) -> tuple[str, str]:
+    """Normalize street type from trailing street name token when missing."""
+    if street_type.strip():
+        return street_name, street_type
+    if not street_name.strip():
+        return street_name, street_type
+
+    type_map = {
+        "STREET": "ST",
+        "ST": "ST",
+        "AVENUE": "AVE",
+        "AVE": "AVE",
+        "BOULEVARD": "BLVD",
+        "BLVD": "BLVD",
+        "DRIVE": "DR",
+        "DR": "DR",
+        "LANE": "LN",
+        "LN": "LN",
+        "ROAD": "RD",
+        "RD": "RD",
+        "COURT": "CT",
+        "CT": "CT",
+        "PLACE": "PL",
+        "PL": "PL",
+        "WAY": "WAY",
+        "CIRCLE": "CIR",
+        "CIR": "CIR",
+        "TERRACE": "TER",
+        "TER": "TER",
+        "PARKWAY": "PKWY",
+        "PKWY": "PKWY",
+        "HIGHWAY": "HWY",
+        "HWY": "HWY",
+        "SQUARE": "SQ",
+        "SQ": "SQ",
+        "TRAIL": "TRL",
+        "TRL": "TRL",
+        "LOOP": "LOOP",
+        "ALLEY": "ALY",
+        "ALY": "ALY",
+        "WALK": "WALK",
+    }
+
+    tokens = street_name.strip().split()
+    if not tokens:
+        return street_name, street_type
+
+    candidate = tokens[-1].upper().rstrip(".")
+    normalized_type = type_map.get(candidate, "")
+    if not normalized_type:
+        return street_name, street_type
+
+    normalized_name = " ".join(tokens[:-1]).strip()
+    if not normalized_name:
+        # Keep original if extracting type would erase the street name.
+        return street_name, street_type
+    return normalized_name, normalized_type
+
+
+def _looks_like_intersection(street_name: str) -> bool:
+    """Detect common intersection-style street name patterns."""
+    normalized = re.sub(r"\s+", " ", (street_name or "").strip().lower())
+    if not normalized:
+        return False
+    return " and " in normalized or " & " in normalized
+
+
 async def agent_node(state: WrapperState) -> dict:
     """Run the inner react agent and extract output fields."""
     result = await _inner_agent.ainvoke({"address": state.address})
@@ -252,16 +340,20 @@ async def agent_node(state: WrapperState) -> dict:
 
 async def validate_address_node(state: WrapperState) -> dict:
     """Call the USPS API to validate/correct the parsed address."""
+    normalized_street_name, normalized_street_type = _normalize_street_name_and_type(
+        state.streetName, state.streetType
+    )
+
     # Build street address from components for the API call
     street_parts = []
     if state.streetNumber:
         street_parts.append(state.streetNumber)
     if state.preDirectional:
         street_parts.append(state.preDirectional)
-    if state.streetName:
-        street_parts.append(state.streetName)
-    if state.streetType:
-        street_parts.append(state.streetType)
+    if normalized_street_name:
+        street_parts.append(normalized_street_name)
+    if normalized_street_type:
+        street_parts.append(normalized_street_type)
     if state.postDirectional:
         street_parts.append(state.postDirectional)
     street = " ".join(street_parts)
@@ -287,8 +379,30 @@ async def validate_address_node(state: WrapperState) -> dict:
     )
 
     if usps_result is None:
+        confidence = _infer_confidence_from_components(
+            street_number=state.streetNumber,
+            street_name=normalized_street_name or state.streetName,
+            city=state.city,
+            state=state.state,
+            zip_code=state.zipCode,
+        )
+        notes_suffix = "USPS returned no match (or is temporarily unavailable); keeping parsed values."
+        if _looks_like_intersection(normalized_street_name or state.streetName):
+            confidence = "low"
+            notes_suffix = (
+                "Input appears to be an intersection-style location; USPS delivery-point validation is ambiguous. "
+                + notes_suffix
+            )
         return {
-            "notes": (state.notes + " USPS API call failed; keeping LLM-parsed values.").strip(),
+            "streetName": normalized_street_name,
+            "streetType": normalized_street_type,
+            "confidence": confidence,
+            "usps_validated": False,
+            "usps_match_code": "",
+            "notes": (
+                state.notes
+                + f" {notes_suffix}"
+            ).strip(),
         }
 
     # Extract the address from USPS response

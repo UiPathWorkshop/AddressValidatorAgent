@@ -173,6 +173,230 @@
           "expectedAgentBehavior": "The agent should call the USPS API to validate the address. The address is valid and USPS confirms both the primary address and the floor number, returning usps_validated true with a high-confidence result."
         }
       }
+    },
+    {
+      "id": "valid-address-with-zip-plus4-input",
+      "name": "Valid address where ZIP+4 is provided",
+      "inputs": {
+        "address": "1 Infinite Loop, Cupertino, CA 95014-2083"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "1",
+            "preDirectional": "",
+            "streetName": "INFINITE",
+            "streetType": "LOOP",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "CUPERTINO",
+            "state": "CA",
+            "zipCode": "95014",
+            "zipPlus4": "2083",
+            "country": "US",
+            "formattedAddress": "1 INFINITE LOOP, CUPERTINO, CA 95014-2083",
+            "confidence": "high",
+            "usps_validated": true,
+            "usps_match_code": "Y"
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should preserve the provided ZIP+4, call USPS validation, and return a standardized address with usps_validated true when USPS confirms the address."
+        }
+      }
+    },
+    {
+      "id": "po-box-address",
+      "name": "PO Box mailing address",
+      "inputs": {
+        "address": "PO Box 123, Boise, ID 83701"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "",
+            "preDirectional": "",
+            "streetName": "PO BOX",
+            "streetType": "",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "123",
+            "city": "BOISE",
+            "state": "ID",
+            "zipCode": "83701",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "PO BOX 123, BOISE, ID 83701",
+            "confidence": "medium",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should recognize this as a PO Box style mailing address, parse it without inventing street components, and still attempt USPS validation using the parsed city/state/ZIP context."
+        }
+      }
+    },
+    {
+      "id": "military-apo-address",
+      "name": "Military APO/FPO style address",
+      "inputs": {
+        "address": "PSC 808 Box 45, APO, AE 09012"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "",
+            "preDirectional": "",
+            "streetName": "PSC",
+            "streetType": "",
+            "postDirectional": "",
+            "unitType": "BOX",
+            "unitNumber": "45",
+            "city": "APO",
+            "state": "AE",
+            "zipCode": "09012",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "PSC 808 BOX 45, APO, AE 09012",
+            "confidence": "medium",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should handle military address patterns (APO/AE) without discarding uncommon tokens, parse the available components, and attempt validation without fabricating missing details."
+        }
+      }
+    },
+    {
+      "id": "address-missing-state",
+      "name": "Address missing state abbreviation",
+      "inputs": {
+        "address": "500 W Madison St, Chicago 60661"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "500",
+            "preDirectional": "W",
+            "streetName": "MADISON",
+            "streetType": "ST",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "CHICAGO",
+            "state": "",
+            "zipCode": "60661",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "500 W MADISON ST, CHICAGO, 60661",
+            "confidence": "medium",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should parse the address while leaving state empty because it is not explicitly provided, avoid guessing, and call USPS validation with incomplete data to see whether a match can still be returned."
+        }
+      }
+    },
+    {
+      "id": "intersection-style-input",
+      "name": "Intersection-style location input",
+      "inputs": {
+        "address": "5th Ave and E 59th St, New York, NY"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "",
+            "preDirectional": "",
+            "streetName": "5TH AVE AND E 59TH",
+            "streetType": "ST",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "NEW YORK",
+            "state": "NY",
+            "zipCode": "",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "5TH AVE AND E 59TH ST, NEW YORK, NY",
+            "confidence": "low",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should treat intersection-style input as ambiguous for USPS delivery-point validation, return parsed best-effort fields without fabricating a street number or ZIP, and record a lower-confidence result."
+        }
+      }
+    },
+    {
+      "id": "missing-street-number",
+      "name": "Address missing street number",
+      "inputs": {
+        "address": "Main St, Denver, CO 80202"
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "",
+            "preDirectional": "",
+            "streetName": "MAIN",
+            "streetType": "ST",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "DENVER",
+            "state": "CO",
+            "zipCode": "80202",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "MAIN ST, DENVER, CO 80202",
+            "confidence": "low",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "The agent should identify that the street number is missing, preserve that field as empty, and still attempt USPS validation with the available city/state/ZIP context without fabricating a house number."
+        }
+      }
+    },
+    {
+      "id": "blank-input-address",
+      "name": "Blank input should not hallucinate fields",
+      "inputs": {
+        "address": "   "
+      },
+      "evaluationCriterias": {
+        "LLMJudgeSemanticSimilarity": {
+          "expectedOutput": {
+            "streetNumber": "",
+            "preDirectional": "",
+            "streetName": "",
+            "streetType": "",
+            "postDirectional": "",
+            "unitType": "",
+            "unitNumber": "",
+            "city": "",
+            "state": "",
+            "zipCode": "",
+            "zipPlus4": "",
+            "country": "US",
+            "formattedAddress": "",
+            "confidence": "low",
+            "usps_validated": false,
+            "usps_match_code": ""
+          }
+        },
+        "LLMJudgeTrajectory": {
+          "expectedAgentBehavior": "Given a blank input, the run should complete safely without USPS validation tool calls and without errors. An empty AgentRunHistory is acceptable and expected for this case."
+        }
+      }
     }
   ],
   "fileName": "evaluation-set-default.json",
