@@ -327,6 +327,14 @@ def _looks_like_intersection(street_name: str) -> bool:
     return " and " in normalized or " & " in normalized
 
 
+def _input_looks_like_intersection(raw_address: str) -> bool:
+    """Detect intersection-style raw address input."""
+    normalized = re.sub(r"\s+", " ", (raw_address or "").strip().lower())
+    if not normalized:
+        return False
+    return " and " in normalized or " & " in normalized
+
+
 async def agent_node(state: WrapperState) -> dict:
     """Run the inner react agent and extract output fields."""
     result = await _inner_agent.ainvoke({"address": state.address})
@@ -343,6 +351,25 @@ async def validate_address_node(state: WrapperState) -> dict:
     normalized_street_name, normalized_street_type = _normalize_street_name_and_type(
         state.streetName, state.streetType
     )
+    normalized_intersection_name = normalized_street_name or state.streetName
+
+    # Intersection-style inputs are not reliable USPS delivery-point lookups.
+    # Skip USPS to avoid collapsing ambiguous intersections into a single street.
+    if _input_looks_like_intersection(state.address) or (
+        not (state.streetNumber or "").strip()
+        and _looks_like_intersection(normalized_intersection_name)
+    ):
+        return {
+            "streetName": normalized_street_name,
+            "streetType": normalized_street_type,
+            "confidence": "low",
+            "usps_validated": False,
+            "usps_match_code": "",
+            "notes": (
+                state.notes
+                + " USPS validation skipped for intersection-style input because delivery-point resolution is ambiguous."
+            ).strip(),
+        }
 
     # Build street address from components for the API call
     street_parts = []
